@@ -1,54 +1,62 @@
-# PS-21: Kidney Abnormality Detection from CT
+# Kidney Abnormality Detection from CT (PS-21)
 
-**Name:** Sai Rutwik Reddy Kanchamreddy | **Register No.:** [Student Register No.] | **Section:** [Student Section]  
-**PS No. & Title:** PS-21 Kidney Abnormality Detection from CT | **Date:** November 12, 2026  
-**GitHub Link to Notebook:** [https://github.com/Rutwik-begin/PS-21-Kidney-Abnormality-Detection-from-CT-Domain-Healthcare-Medical-Imaging/blob/main/notebooks/PS21_Kidney_Abnormality_Detection.ipynb](https://github.com/Rutwik-begin/PS-21-Kidney-Abnormality-Detection-from-CT-Domain-Healthcare-Medical-Imaging/blob/main/notebooks/PS21_Kidney_Abnormality_Detection.ipynb)
+**Name:** Kanchamreddy Sai Rutwik Reddy | **Register No.:** RA2311026050138  
+**Department:** IVCSE-AIML C | **Date:** 12 November 2026  
+**GitHub notebook:** [https://github.com/Rutwik-begin/PS-21-Kidney-Abnormality-Detection-from-CT-Domain-Healthcare-Medical-Imaging.git](https://github.com/Rutwik-begin/PS-21-Kidney-Abnormality-Detection-from-CT-Domain-Healthcare-Medical-Imaging.git)
 
 ---
 
 ### 1. Problem and Objective
-Renal pathologies—benign cysts, nephrolithiasis (kidney stones), and malignant tumours—exhibit overlapping radiological attenuation patterns on abdominal CT, demanding urgent, precise discrimination to prevent irreversible renal impairment or diagnostic delays. Success is judged primarily by **Macro F1 score (target >0.94)** for multi-class balance and **Stone Recall (target >0.92)** specifically, ensuring that small calcifications in the minority class are not systematically missed by the classifier in emergency triage.
+This task classifies kidney CT slices into four categories: normal, cyst, stone, or tumour. Early identification of renal abnormalities supports timely clinical triage and treatment planning. The CT Kidney dataset is imbalanced and includes multiple slices from the same patient study; therefore, splitting by patient ID is essential to avoid information leakage. Macro F1 is the primary metric because it weights each class equally, and stone recall is reported separately because stone is the smallest class.
 
 ### 2. Dataset and Pre-processing
-We utilize the Kaggle CT Kidney Dataset ([Link](https://www.kaggle.com/datasets/nazmul0087/ct-kidney-dataset-normal-cyst-tumor-and-stone)) containing 12,446 axial slices across four classes: Normal (5,077), Cyst (3,709), Tumour (2,283), and Stone (1,377). Rather than a naive slice-level random split that leaks contiguous 2D slices from the same 3D patient volume, we enforce a patient-study grouped split (70% train: 8,712 slices; 15% validation: 1,867 slices; 15% test: 1,867 slices). Images are resized to $224 \times 224$ pixels, converted to 3-channel tensors, and normalized using ImageNet channel statistics. Augmentations encompass bilateral horizontal flipping (preserving bilateral kidney anatomy), gentle gantry tilt rotation ($\pm 10^\circ$), and soft-tissue contrast jittering, while arbitrary vertical flips are omitted to preserve anatomical supine orientation. Severe class imbalance against the minority Stone class (11.1%) is resolved using inverse-frequency Class-Weighted Focal Loss ($\gamma = 2.0$).
+The CT Kidney Dataset contains 12,446 images: normal 5,077; cyst 3,709; tumour 2,283; stone 1,377. Source: Kaggle, https://www.kaggle.com/datasets/nazmul0087/ct-kidney-dataset-normal-cyst-tumor-and-stone. Proposed split: approximately 70/15/15% by patient study ID, stratified as closely as feasible; exact partition counts must be generated from metadata. Resize to 224×224 and apply ImageNet normalization. Training-only augmentation may include modest rotation, crop, colour jitter, and horizontal flip for bilateral anatomical preservation. Use class-weighted cross-entropy or focal loss to handle stone class imbalance. Validation and test images receive deterministic preprocessing only.
+
+![Fig. 1. Class counts in the full dataset; source counts, not model results.](../figures/sample_fig1_class_dist.png)  
+*Fig. 1. Class counts in the full dataset; source counts, not model results.*
 
 ### 3. Methodology
-We evaluate a custom 4-stage CNN trained from scratch against fine-tuned transfer learning backbones (ResNet-50 and EfficientNet-B0) equipped with dropout-regularized classification heads. In ResNet-50, stages 1–3 were frozen during initial warmup while stage 4 and the custom head were fine-tuned with differential learning rates to preserve low-level edge filters while adapting high-level renal attenuation features. Models are optimized using AdamW with cosine annealing scheduling, mixed-precision arithmetic, and early stopping on validation Macro F1 with a patience of 4 epochs.
+A pretrained EfficientNet-B0 is proposed with dropout (0.3) and a four-class output head. First train the head with the backbone frozen, then fine-tune the full network at a lower learning rate. Use AdamW, weighted focal loss / cross-entropy, cosine learning-rate decay and early stopping based on validation macro F1. Compare against ResNet-50 using the same data split and preprocessing. Fix random seeds and save split assignments and the best checkpoint for reproducibility.
 
-| Hyperparameter | Value / Setting |
-| :--- | :--- |
-| **Input Dimensions** | $224 \times 224 \times 3$ |
-| **Optimizer & Weight Decay** | AdamW ($\beta_1=0.9, \beta_2=0.999$, weight decay = $1 \times 10^{-4}$) |
-| **Learning Rate Schedule** | Base $\text{LR} = 3 \times 10^{-4}$ (Head), $3 \times 10^{-5}$ (Backbone); Cosine Annealing |
-| **Batch Size & Epochs** | Batch Size: 32; Maximum Epochs: 15; Early Stopping Patience: 4 |
-| **Loss Function** | Multi-Class Class-Weighted Focal Loss ($\alpha_{\text{stone}}=1.82, \gamma=2.0$) |
-| **Augmentation Policy** | Random H-Flip ($p=0.5$), Random Rotation ($\pm 10^\circ$), Contrast Jitter (0.15) |
+| Setting | Illustrative value | Setting | Illustrative value |
+| :--- | :--- | :--- | :--- |
+| Architecture | EfficientNet-B0 pretrained | Optimizer | AdamW; weight decay 1e-4 |
+| Input size | 224 × 224 | Learning rate | 1e-3 head; 1e-4 fine-tune |
+| Loss | Class-weighted Focal Loss / CE | Batch size | 32 |
+| Epochs | 30 maximum | Early stopping | Patience 5; val. macro F1 |
+
+### 4. Results
+| Model (synthetic example) | Test accuracy | Macro F1 | Stone Recall | Normal F1 | Train time* |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| ResNet-50 baseline | 94.20% | 0.938 | 0.782 | 0.966 | 18 min |
+| EfficientNet-B0 | 96.60% | 0.962 | 0.948 | 0.978 | 14 min |
+
+*Synthetic EfficientNet example (n=1,867): accuracy 96.60%; macro precision 0.964; macro recall 0.960; macro F1 0.962; stone recall 0.948. Training times and all model results are invented for layout demonstration; replace with actual notebook outputs.*
+
+### 5. Analysis and Discussion
+In the illustrative matrix, normal is strongest because it has the most examples. Cyst and tumour are occasionally confused with each other, reflecting visual overlap in soft-tissue attenuation and necrotic regions. The rare class (stone) has the fewest training examples and small pixel footprints, so its recall is unstable under unweighted cross-entropy. The synthetic comparison suggests EfficientNet-B0 improves macro F1 and stone recall over the baseline; this is not evidence of a real gain. Random splitting across slices artificially inflates test performance due to patient leakage; for the actual run, enforce strict patient-study splitting and inspect misclassified images and train/validation curves before concluding whether overfitting occurred.
 
 ---
 
-### 4. Results
-The empirical evaluation demonstrates that transfer learning combined with focal loss significantly outperforms the baseline CNN from scratch, while highlighting the artificial inflation caused by patient data leakage.
+### Illustrative evaluation figures and deployment considerations
 
-| Model | Split Strategy | Test Acc. (%) | Macro F1 | Stone Recall | Cyst F1 | Normal F1 | Tumour F1 | Training Time |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Custom CNN (Scratch)** | Patient-Grouped | 87.4% | 0.862 | 0.814 | 0.871 | 0.895 | 0.868 | ~12 min |
-| **ResNet-50 (Naive Split)** | *Random (Leakage)* | **99.4%** | **0.993** | **0.989** | 0.994 | 0.996 | 0.992 | ~18 min |
-| **ResNet-50 (CE Loss)** | Patient-Grouped | 94.2% | 0.938 | 0.782 | 0.952 | 0.966 | 0.932 | ~18 min |
-| **ResNet-50 (Focal Loss)** | Patient-Grouped | 95.8% | 0.954 | **0.936** | 0.961 | 0.972 | 0.947 | ~19 min |
-| **EfficientNet-B0 (Focal)** | Patient-Grouped | **96.6%** | **0.962** | **0.948** | **0.968** | **0.978** | **0.954** | ~15 min |
+![Fig. 2. Synthetic training/validation curves (left) and synthetic test confusion matrix (right).](../figures/sample_fig2_combined.png)  
+*Fig. 2. Synthetic training/validation curves (left) and synthetic test confusion matrix (right).*
 
-![Confusion Matrix](../figures/confusion_matrix.png)
-*Figure 1: Normalized Test Confusion Matrix (Patient-Grouped Split) showing 94.7% Stone recall and minimal cross-class confusion.*
-
-![Learning Curves](../figures/learning_curves.png)
-*Figure 2: Training & Validation Loss convergence (left) and Macro F1 & Stone Recall trajectories with early stopping (right).*
-
-### 5. Analysis and Discussion
-A central finding is that naive random splitting produces an artificially inflated accuracy of 99.4% due to severe information leakage across contiguous 2D slices of the same patient volume; enforcing patient-study grouping reveals true clinical generalization at 95.8%–96.6% (a 3.6% leakage gap). Misclassifications primarily arise between proteinaceous/hemorrhagic cysts and hypovascular renal cell carcinomas because non-contrast CT attenuations overlap in the 20–40 HU window. Under standard Cross-Entropy, Stone recall drops to an unacceptable 78.2% because calcifications occupy tiny pixel areas; our class-weighted focal loss drastically elevated Stone recall to 94.8% without generating false-positive calcifications on transverse spinal bone. Saliency analysis (Grad-CAM) verifies that the network focuses squarely on parenchymal abnormalities rather than extraneous mesenteric fat or scanner couch artifacts.
+#### Illustrative per-class metrics
+| Class | Precision | Recall | F1 | Support |
+| :--- | :---: | :---: | :---: | :---: |
+| cyst | 0.96 | 0.96 | 0.96 | 556 |
+| normal | 0.98 | 0.97 | 0.98 | 762 |
+| stone | 0.95 | 0.95 | 0.95 | 207 |
+| tumor | 0.95 | 0.92 | 0.94 | 342 |
 
 ### 6. Real-world Relevance, Limitations and Ethics
-This model serves as a high-throughput triage decision-support tool in acute emergency departments to expedite non-contrast CT evaluations for obstructing calculi or silent renal neoplasms. Clinical adoption is currently limited by the 2D slice formulation that lacks 3D inter-slice spatial continuity, reliance on compressed 8-bit images rather than raw 12-bit DICOM Hounsfield Units, and single-source dataset demographic bias. Ethically, the system must remain strictly an assistive triage aid with mandatory radiologist sign-off, accompanied by rigorous de-identification of protected health information (PHI) to guarantee patient privacy.
+A validated classifier could help prioritize suspicious lesions (e.g. stones causing acute renal colic or renal cell carcinomas) for clinician review in emergency care or triage, but it must not replace medical diagnosis. The dataset may underrepresent rare histological variants, diverse scanner models, and pediatric protocols; external validation, calibration and prospective evaluation are necessary. False-negative stone or tumor predictions are especially serious. Medical images require appropriate permissions, secure storage and responsible handling.
 
 ### 7. Conclusion and Future Work
-Patient-stratified transfer learning with class-weighted focal loss achieved 96.6% accuracy and 94.8% Stone recall while eliminating patient study data leakage. Future work will extend this framework to 3D volumetric Vision Transformers (e.g., UNETR) trained directly on multi-phase contrast-enhanced raw DICOM CT volumes.
+In this synthetic demonstration, EfficientNet-B0 has macro F1 0.962 versus 0.938 for ResNet-50, with stone recall of 0.948; these are not measured results. Next, run a reproducible patient-level experiment and replace all simulated metrics and curves with actual outputs, then validate on an external dataset.
 
+### References
+[1] N. Islam et al., “CT Kidney Dataset: Normal-Cyst-Tumor and Stone,” Kaggle, 2021. https://www.kaggle.com/datasets/nazmul0087/ct-kidney-dataset-normal-cyst-tumor-and-stone.  
+[2] M. Tan and Q. V. Le, “EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks,” in International Conference on Machine Learning (ICML), 2019. https://arxiv.org/abs/1905.11946.
