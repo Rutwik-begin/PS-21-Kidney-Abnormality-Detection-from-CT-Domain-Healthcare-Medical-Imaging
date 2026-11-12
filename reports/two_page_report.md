@@ -51,3 +51,4 @@ This model serves as a high-throughput triage decision-support tool in acute eme
 
 ### 7. Conclusion and Future Work
 Patient-stratified transfer learning with class-weighted focal loss achieved 96.6% accuracy and 94.8% Stone recall while eliminating patient study data leakage. Future work will extend this framework to 3D volumetric Vision Transformers (e.g., UNETR) trained directly on multi-phase contrast-enhanced raw DICOM CT volumes.
+

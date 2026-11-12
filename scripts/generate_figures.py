@@ -289,3 +289,4 @@ if __name__ == '__main__':
     generate_roc_curves()
     generate_synthetic_gradcam_figure()
     print("\n[+] All visual report figures successfully generated in D:/CBL/figures/")
+

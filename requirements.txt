@@ -16,3 +16,4 @@ PyPDF2>=3.0.0
 # Jupyter
 jupyter>=1.0.0
 ipykernel>=6.0.0
+

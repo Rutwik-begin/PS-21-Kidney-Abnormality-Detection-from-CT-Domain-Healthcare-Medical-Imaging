@@ -382,3 +382,4 @@ def build_pdf_report():
 
 if __name__ == '__main__':
     build_pdf_report()
+

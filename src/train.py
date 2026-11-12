@@ -211,3 +211,4 @@ def fit(
         print(f"[+] Loaded best model checkpoint from {checkpoint_path}")
 
     return history
+
