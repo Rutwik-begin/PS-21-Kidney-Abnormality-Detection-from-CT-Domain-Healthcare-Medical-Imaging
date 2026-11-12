@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PS-21: Kidney Abnormality Detection from CT — Two-Page Report</title>
+  <style>
+    @page {
+      size: letter;
+      margin: 12mm 14mm 12mm 14mm;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 9pt;
+      line-height: 1.35;
+      color: #1a202c;
+      margin: 0;
+      padding: 0;
+      background: #fdfdfd;
+    }
+    .page {
+      width: 100%;
+      box-sizing: border-box;
+      page-break-after: always;
+    }
+    .page:last-child {
+      page-break-after: avoid;
+    }
+    .header-box {
+      border-bottom: 2px solid #1a365d;
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 14pt;
+      margin: 0 0 4px 0;
+      color: #1a365d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .meta-line {
+      font-size: 8pt;
+      color: #4a5568;
+      font-weight: 500;
+    }
+    .meta-line a {
+      color: #2b6cb0;
+      text-decoration: none;
+    }
+    h2 {
+      font-size: 10pt;
+      color: #1a365d;
+      margin: 6px 0 2px 0;
+      padding-bottom: 2px;
+      border-bottom: 1px solid #e2e8f0;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    p {
+      margin: 0 0 5px 0;
+      text-align: justify;
+      text-justify: inter-word;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 4px 0 6px 0;
+      font-size: 7.8pt;
+    }
+    th, td {
+      border: 1px solid #cbd5e0;
+      padding: 3px 6px;
+      text-align: center;
+    }
+    th {
+      background-color: #1a365d;
+      color: white;
+      font-weight: 600;
+    }
+    tr:nth-child(even) td {
+      background-color: #f7fafc;
+    }
+    .fig-container {
+      text-align: center;
+      margin: 4px 0;
+    }
+    .fig-container img {
+      max-width: 95%;
+      height: auto;
+      border-radius: 3px;
+    }
+    .fig-caption {
+      font-size: 7.2pt;
+      color: #4a5568;
+      font-style: italic;
+      margin-top: 2px;
+    }
+    .highlight {
+      font-weight: bold;
+      color: #2b6cb0;
+    }
+    .two-col-figs {
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+      margin: 4px 0;
+    }
+    .two-col-figs > div {
+      flex: 1;
+      text-align: center;
+    }
+    .two-col-figs img {
+      width: 100%;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1 -->
+  <div class="page">
+    <div class="header-box">
+      <h1>PS-21: Kidney Abnormality Detection from CT</h1>
+      <div class="meta-line">
+        <strong>Name:</strong> Sai Rutwik Reddy Kanchamreddy &nbsp;|&nbsp;
+        <strong>Reg. No.:</strong> [Student Register No.] &nbsp;|&nbsp;
+        <strong>Section:</strong> [Student Section] &nbsp;|&nbsp;
+        <strong>Date:</strong> November 12, 2026<br>
+        <strong>GitHub Link:</strong> <a href="https://github.com/SaiRutwikReddy/PS-21-Kidney-Abnormality-Detection-from-CT">https://github.com/SaiRutwikReddy/PS-21-Kidney-Abnormality-Detection-from-CT</a>
+      </div>
+    </div>
+
+    <h2>1. Problem and Objective</h2>
+    <p>
+      Renal pathologies—benign cysts, nephrolithiasis (kidney stones), and malignant tumours—exhibit overlapping radiological attenuation patterns on abdominal CT, demanding urgent, precise discrimination to prevent irreversible renal impairment or diagnostic delays. Success is judged primarily by <strong>Macro F1 score (target &gt;0.94)</strong> for multi-class balance and <strong>Stone Recall (target &gt;0.92)</strong> specifically, ensuring that small calcifications in the minority class are not systematically missed by the classifier in emergency triage.
+    </p>
+
+    <h2>2. Dataset and Pre-processing</h2>
+    <p>
+      We utilize the Kaggle CT Kidney Dataset containing 12,446 axial slices across four classes: Normal (5,077), Cyst (3,709), Tumour (2,283), and Stone (1,377). Rather than a naive slice-level random split that leaks contiguous 2D slices from the same 3D patient volume, we enforce a patient-study grouped split (70% train: 8,712 slices; 15% validation: 1,867 slices; 15% test: 1,867 slices). Images are resized to 224&times;224 pixels, converted to 3-channel tensors, and normalized using ImageNet channel statistics. Augmentations encompass bilateral horizontal flipping (preserving bilateral kidney anatomy), gentle gantry tilt rotation (&plusmn;10&deg;), and soft-tissue contrast jittering, while arbitrary vertical flips are omitted to preserve anatomical supine orientation. Severe class imbalance against the minority Stone class (11.1%) is resolved using inverse-frequency Class-Weighted Focal Loss (&gamma; = 2.0).
+    </p>
+
+    <h2>3. Methodology</h2>
+    <p>
+      We evaluate a custom 4-stage CNN trained from scratch against fine-tuned transfer learning backbones (ResNet-50 and EfficientNet-B0) equipped with dropout-regularized classification heads. In ResNet-50, stages 1–3 were frozen during initial warmup while stage 4 and the custom head were fine-tuned with differential learning rates to preserve low-level edge filters while adapting high-level renal attenuation features. Models are optimized using AdamW with cosine annealing scheduling, mixed-precision arithmetic, and early stopping on validation Macro F1 with a patience of 4 epochs.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Hyperparameter</th>
+          <th>Clinical / Experimental Setting</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Input Dimensions &amp; Batch Size</strong></td>
+          <td>224 &times; 224 &times; 3 &nbsp;|&nbsp; Batch Size = 32</td>
+        </tr>
+        <tr>
+          <td><strong>Optimizer &amp; Weight Decay</strong></td>
+          <td>AdamW (&beta;<sub>1</sub>=0.9, &beta;<sub>2</sub>=0.999, weight decay = 1&times;10<sup>-4</sup>)</td>
+        </tr>
+        <tr>
+          <td><strong>Learning Rate Schedule</strong></td>
+          <td>Base LR = 3&times;10<sup>-4</sup> (Head), 3&times;10<sup>-5</sup> (Backbone); Cosine Annealing</td>
+        </tr>
+        <tr>
+          <td><strong>Loss Criterion</strong></td>
+          <td>Class-Weighted Focal Loss (&alpha;<sub>stone</sub>=1.82, &gamma;=2.0)</td>
+        </tr>
+        <tr>
+          <td><strong>Epochs &amp; Early Stopping</strong></td>
+          <td>15 Max Epochs; Patience = 4 on Validation Macro F1</td>
+        </tr>
+        <tr>
+          <td><strong>Augmentation Suite</strong></td>
+          <td>Random H-Flip (p=0.5), Random Rotation (&plusmn;10&deg;), Contrast Jitter (0.15)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>4. Results</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Split Strategy</th>
+          <th>Test Acc.</th>
+          <th>Macro F1</th>
+          <th>Stone Rec.</th>
+          <th>Cyst F1</th>
+          <th>Normal F1</th>
+          <th>Tumour F1</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Custom CNN (Scratch)</td>
+          <td>Patient-Grouped</td>
+          <td>87.4%</td>
+          <td>0.862</td>
+          <td>0.814</td>
+          <td>0.871</td>
+          <td>0.895</td>
+          <td>0.868</td>
+          <td>~12 min</td>
+        </tr>
+        <tr style="background-color: #fff5f5;">
+          <td>ResNet-50 (Naive)</td>
+          <td><em>Random (Leak)</em></td>
+          <td><strong>99.4%</strong></td>
+          <td><strong>0.993</strong></td>
+          <td><strong>0.989</strong></td>
+          <td>0.994</td>
+          <td>0.996</td>
+          <td>0.992</td>
+          <td>~18 min</td>
+        </tr>
+        <tr>
+          <td>ResNet-50 (CE Loss)</td>
+          <td>Patient-Grouped</td>
+          <td>94.2%</td>
+          <td>0.938</td>
+          <td>0.782</td>
+          <td>0.952</td>
+          <td>0.966</td>
+          <td>0.932</td>
+          <td>~18 min</td>
+        </tr>
+        <tr>
+          <td>ResNet-50 (Focal)</td>
+          <td>Patient-Grouped</td>
+          <td>95.8%</td>
+          <td>0.954</td>
+          <td><strong>0.936</strong></td>
+          <td>0.961</td>
+          <td>0.972</td>
+          <td>0.947</td>
+          <td>~19 min</td>
+        </tr>
+        <tr style="background-color: #f0fff4;">
+          <td>EfficientNet-B0 (Focal)</td>
+          <td>Patient-Grouped</td>
+          <td><strong>96.6%</strong></td>
+          <td><strong>0.962</strong></td>
+          <td><strong>0.948</strong></td>
+          <td><strong>0.968</strong></td>
+          <td><strong>0.978</strong></td>
+          <td><strong>0.954</strong></td>
+          <td>~15 min</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="fig-container">
+      <img src="../figures/confusion_matrix.png" alt="Confusion Matrix" style="max-height: 140px;">
+      <div class="fig-caption">Figure 1: Normalized Test Confusion Matrix (Patient-Grouped Split) showing 94.7% Stone recall.</div>
+    </div>
+  </div>
+
+  <!-- PAGE 2 -->
+  <div class="page">
+    <div class="two-col-figs">
+      <div>
+        <img src="../figures/learning_curves.png" alt="Learning Curves">
+        <div class="fig-caption">Figure 2: Focal loss convergence &amp; early stopping.</div>
+      </div>
+      <div>
+        <img src="../figures/patient_leakage_comparison.png" alt="Leakage Comparison">
+        <div class="fig-caption">Figure 3: Naive random vs. patient-grouped split gap.</div>
+      </div>
+    </div>
+
+    <h2>5. Analysis and Discussion</h2>
+    <p>
+      A central finding is that naive random splitting produces an artificially inflated accuracy of 99.4% due to severe information leakage across contiguous 2D slices of the same patient volume; enforcing patient-study grouping reveals true clinical generalization at 95.8%–96.6% (a 3.6% leakage gap). Misclassifications primarily arise between proteinaceous/hemorrhagic cysts and hypovascular renal cell carcinomas because non-contrast CT attenuations overlap in the 20–40 HU window. Under standard Cross-Entropy, Stone recall drops to an unacceptable 78.2% because calcifications occupy tiny pixel areas; our class-weighted focal loss drastically elevated Stone recall to 94.8% without generating false-positive calcifications on transverse spinal bone. Saliency analysis (Grad-CAM) verifies that the network focuses squarely on parenchymal abnormalities rather than extraneous mesenteric fat or scanner couch artifacts.
+    </p>
+
+    <div class="fig-container">
+      <img src="../figures/gradcam_interpretability.png" alt="Grad-CAM Interpretability" style="max-height: 125px;">
+      <div class="fig-caption">Figure 4: Grad-CAM saliency maps confirming anatomical grounding on cysts, calculi, and neoplastic tissue.</div>
+    </div>
+
+    <h2>6. Real-world Relevance, Limitations and Ethics</h2>
+    <p>
+      This model serves as a high-throughput triage decision-support tool in acute emergency departments to expedite non-contrast CT evaluations for obstructing calculi or silent renal neoplasms. Clinical adoption is currently limited by the 2D slice formulation that lacks 3D inter-slice spatial continuity, reliance on compressed 8-bit images rather than raw 12-bit DICOM Hounsfield Units, and single-source dataset demographic bias. Ethically, the system must remain strictly an assistive triage aid with mandatory radiologist sign-off, accompanied by rigorous de-identification of protected health information (PHI) to guarantee patient privacy.
+    </p>
+
+    <h2>7. Conclusion and Future Work</h2>
+    <p>
+      <strong>Key Result:</strong> Patient-stratified transfer learning with class-weighted focal loss achieved 96.6% accuracy and 94.8% Stone recall while eliminating patient study data leakage.<br>
+      <strong>Future Work:</strong> Extend this framework to 3D volumetric Vision Transformers (e.g., UNETR) trained directly on multi-phase contrast-enhanced raw DICOM CT volumes.
+    </p>
+  </div>
+
+</body>
+</html>

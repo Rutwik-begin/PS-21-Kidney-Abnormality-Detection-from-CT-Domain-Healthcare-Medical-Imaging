@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Data & Large Weights
+data/
+datasets/
+*.zip
+*.tar.gz
+*.pth
+*.pt
+*.onnx
+*.h5
+!weights/best_model_weights_meta.json
+
+# Logs & System
+*.log
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
