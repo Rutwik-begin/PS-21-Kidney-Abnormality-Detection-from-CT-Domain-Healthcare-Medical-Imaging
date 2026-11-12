@@ -186,8 +186,8 @@ d:/CBL/
 ### 1. Installation
 Clone this repository and install dependencies:
 ```bash
-git clone https://github.com/SaiRutwikReddy/PS-21-Kidney-Abnormality-Detection-from-CT.git
-cd PS-21-Kidney-Abnormality-Detection-from-CT
+git clone https://github.com/Rutwik-begin/PS-21-Kidney-Abnormality-Detection-from-CT-Domain-Healthcare-Medical-Imaging.git
+cd PS-21-Kidney-Abnormality-Detection-from-CT-Domain-Healthcare-Medical-Imaging
 pip install -r requirements.txt
 ```
 

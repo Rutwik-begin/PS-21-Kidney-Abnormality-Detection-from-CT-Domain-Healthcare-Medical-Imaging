@@ -155,7 +155,7 @@ def build_pdf_report():
         "<b>Reg. No.:</b> [Student Register No.] &nbsp;|&nbsp; "
         "<b>Section:</b> [Student Section] &nbsp;|&nbsp; "
         "<b>Date:</b> November 12, 2026<br/>"
-        "<b>GitHub Link to Notebook:</b> https://github.com/SaiRutwikReddy/PS-21-Kidney-Abnormality-Detection-from-CT"
+        "<b>GitHub Link to Notebook:</b> https://github.com/Rutwik-begin/PS-21-Kidney-Abnormality-Detection-from-CT-Domain-Healthcare-Medical-Imaging"
     )
     story.append(Paragraph(header_info, header_meta_style))
     story.append(Spacer(1, 3))

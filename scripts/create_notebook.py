@@ -42,7 +42,7 @@ def create_notebook():
 **Author / Student Name:** Sai Rutwik Reddy Kanchamreddy  
 **Register No.:** [Student Register No.] | **Section:** [Student Section]  
 **Date:** November 12, 2026  
-**Repository & Notebook:** [GitHub Repository](https://github.com/SaiRutwikReddy/PS-21-Kidney-Abnormality-Detection-from-CT)
+**Repository & Notebook:** [GitHub Repository](https://github.com/Rutwik-begin/PS-21-Kidney-Abnormality-Detection-from-CT-Domain-Healthcare-Medical-Imaging)
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Name:** Sai Rutwik Reddy Kanchamreddy | **Register No.:** [Student Register No.] | **Section:** [Student Section]  
 **PS No. & Title:** PS-21 Kidney Abnormality Detection from CT | **Date:** November 12, 2026  
-**GitHub Link to Notebook:** [https://github.com/SaiRutwikReddy/PS-21-Kidney-Abnormality-Detection-from-CT/blob/main/notebooks/PS21_Kidney_Abnormality_Detection.ipynb](https://github.com/SaiRutwikReddy/PS-21-Kidney-Abnormality-Detection-from-CT/blob/main/notebooks/PS21_Kidney_Abnormality_Detection.ipynb)
+**GitHub Link to Notebook:** [https://github.com/Rutwik-begin/PS-21-Kidney-Abnormality-Detection-from-CT-Domain-Healthcare-Medical-Imaging/blob/main/notebooks/PS21_Kidney_Abnormality_Detection.ipynb](https://github.com/Rutwik-begin/PS-21-Kidney-Abnormality-Detection-from-CT-Domain-Healthcare-Medical-Imaging/blob/main/notebooks/PS21_Kidney_Abnormality_Detection.ipynb)
 
 ---
 
